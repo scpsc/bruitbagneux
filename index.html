@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Cône géographique</title>
+
+  <!-- Leaflet -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
+
+  <style>
+
+    html, body {
+      margin: 0;
+      height: 100%;
+      font-family: Arial, sans-serif;
+    }
+
+    #map {
+      width: 100%;
+      height: 100%;
+    }
+
+    .controls {
+
+      position: absolute;
+      top: 80px;
+      left: 10px;
+
+      z-index: 1000;
+
+      width: 300px;
+
+      background: white;
+      padding: 14px;
+
+      border-radius: 10px;
+
+      box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+    }
+
+    .controls label {
+      display: block;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+
+    .controls input[type="text"] {
+
+      width: 100%;
+      box-sizing: border-box;
+
+      padding: 8px;
+      margin-bottom: 8px;
+    }
+
+    .controls input[type="range"] {
+      width: 100%;
+    }
+
+    button {
+
+      width: 100%;
+      padding: 8px;
+
+      margin-top: 8px;
+
+      cursor: pointer;
+    }
+
+    .url-box {
+
+      margin-top: 12px;
+
+      background: #f2f2f2;
+
+      padding: 8px;
+
+      border-radius: 6px;
+
+      font-size: 12px;
+      word-break: break-word;
+    }
+
+  </style>
+</head>
+
+<body>
+
+<div class="controls">
+
+  <input
+    type="text"
+    id="addressInput"
+    placeholder="Entrer une adresse"
+  >
+
+  <button id="searchBtn">
+    Rechercher une adresse
+  </button>
+
+  <hr>
+
+  <strong>Paramètres du cône</strong>
+
+  <label>
+    Orientation :
+    <span id="angleValue">90</span>°
+
+    <input
+      type="range"
+      id="angle"
+      min="0"
+      max="360"
+      step="1"
+      value="90"
+    >
+  </label>
+
+  <label>
+    Largeur :
+    <span id="widthValue">40</span>°
+
+    <input
+      type="range"
+      id="width"
+      min="5"
+      max="120"
+      step="1"
+      value="40"
+    >
+  </label>
+
+  <label>
+    Profondeur :
+    <span id="depthValue">200</span> m
+
+    <input
+      type="range"
+      id="depth"
+      min="10"
+      max="5000"
+      step="10"
+      value="200"
+    >
+  </label>
+
+  <button id="copyBtn">
+    Copier l'URL
+  </button>
+
+  <div class="url-box" id="urlBox"></div>
+
+</div>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+
+  // =========================
+  // CONFIGURATION PAR DÉFAUT
+  // =========================
+
+  const DEFAULT_LAT = 48.801900;
+  const DEFAULT_LNG = 2.321874;
+  const DEFAULT_ZOOM = 17;
+
+  // =========================
+  // LECTURE DES PARAMÈTRES URL
+  // =========================
+
+  const params = new URLSearchParams(window.location.search);
+
+  let lat = parseFloat(params.get("lat")) || DEFAULT_LAT;
+  let lng = parseFloat(params.get("lng")) || DEFAULT_LNG;
+  let angle = parseFloat(params.get("angle")) || 90;
+  let width = parseFloat(params.get("width")) || 40;
+  let depth = parseFloat(params.get("depth")) || 100;
+
+  // =========================
+  // INITIALISATION CARTE
+  // =========================
+
+  const map = L.map("map").setView(
+    [lat, lng],
+    DEFAULT_ZOOM
+  );
+
+  L.tileLayer(
+    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    {
+      attribution:
+        '&copy; OpenStreetMap contributors'
+    }
+  ).addTo(map);
+
+  // =========================
+  // MARQUEUR DRAGGABLE
+  // =========================
+
+  const marker = L.marker(
+    [lat, lng],
+    {
+      draggable: true
+    }
+  ).addTo(map);
+
+  // =========================
+  // CALCUL GÉOGRAPHIQUE
+  // =========================
+
+  function destinationPoint(lat, lng, distance, bearing) {
+
+    const R = 6378137;
+
+    const brng = bearing * Math.PI / 180;
+
+    const lat1 = lat * Math.PI / 180;
+    const lon1 = lng * Math.PI / 180;
+
+    const lat2 = Math.asin(
+      Math.sin(lat1) * Math.cos(distance / R) +
+      Math.cos(lat1) *
+      Math.sin(distance / R) *
+      Math.cos(brng)
+    );
+
+    const lon2 = lon1 + Math.atan2(
+      Math.sin(brng) *
+      Math.sin(distance / R) *
+      Math.cos(lat1),
+
+      Math.cos(distance / R) -
+      Math.sin(lat1) *
+      Math.sin(lat2)
+    );
+
+    return [
+      lat2 * 180 / Math.PI,
+      lon2 * 180 / Math.PI
+    ];
+  }
+
+  // =========================
+  // CONSTRUCTION DU CONE
+  // =========================
+
+  function buildConePolygon(
+    lat,
+    lng,
+    angle,
+    width,
+    depth
+  ) {
+
+    const points = [];
+
+    points.push([lat, lng]);
+
+    const start = angle - width / 2;
+    const end = angle + width / 2;
+
+    const step = 2;
+
+    for (let a = start; a <= end; a += step) {
+
+      points.push(
+        destinationPoint(
+          lat,
+          lng,
+          depth,
+          a
+        )
+      );
+    }
+
+    points.push([lat, lng]);
+
+    return points;
+  }
+
+  let coneLayer = null;
+
+  // =========================
+  // DESSIN
+  // =========================
+
+  function redrawCone() {
+
+    if (coneLayer) {
+      map.removeLayer(coneLayer);
+    }
+
+    const polygon = buildConePolygon(
+      lat,
+      lng,
+      angle,
+      width,
+      depth
+    );
+
+    coneLayer = L.polygon(
+      polygon,
+      {
+        color: "red",
+        fillColor: "red",
+        fillOpacity: 0.3
+      }
+    ).addTo(map);
+
+    updateURL();
+  }
+
+  // =========================
+  // URL PARTAGEABLE
+  // =========================
+
+  function updateURL() {
+
+    const url =
+      window.location.origin +
+      window.location.pathname +
+
+      `?lat=${lat.toFixed(6)}` +
+      `&lng=${lng.toFixed(6)}` +
+      `&angle=${angle}` +
+      `&width=${width}` +
+      `&depth=${depth}`;
+
+    history.replaceState({}, "", url);
+
+    document.getElementById("urlBox").textContent = url;
+  }
+
+  // =========================
+  // RECHERCHE D'ADRESSE
+  // =========================
+
+  async function searchAddress() {
+
+    const query =
+      document
+        .getElementById("addressInput")
+        .value
+        .trim();
+
+    if (!query) {
+      return;
+    }
+
+    const url =
+      "https://nominatim.openstreetmap.org/search?" +
+      new URLSearchParams({
+        q: query,
+        format: "json",
+        limit: 1
+      });
+
+    try {
+
+      const response = await fetch(
+        url,
+        {
+          headers: {
+            "Accept-Language": "fr"
+          }
+        }
+      );
+
+      const results = await response.json();
+
+      if (!results.length) {
+
+        alert("Adresse introuvable");
+        return;
+      }
+
+      lat = parseFloat(results[0].lat);
+      lng = parseFloat(results[0].lon);
+
+      marker.setLatLng([lat, lng]);
+
+      map.setView([lat, lng], 17);
+
+      redrawCone();
+
+    } catch (err) {
+
+      console.error(err);
+
+      alert("Erreur de recherche");
+    }
+  }
+
+  // =========================
+  // ÉVÉNEMENTS
+  // =========================
+
+  marker.on("drag", (e) => {
+
+    const pos = e.target.getLatLng();
+
+    lat = pos.lat;
+    lng = pos.lng;
+
+    redrawCone();
+  });
+
+  // Orientation
+
+  document
+    .getElementById("angle")
+    .addEventListener("input", (e) => {
+
+      angle = parseFloat(e.target.value);
+
+      document
+        .getElementById("angleValue")
+        .textContent = angle;
+
+      redrawCone();
+    });
+
+  // Largeur
+
+  document
+    .getElementById("width")
+    .addEventListener("input", (e) => {
+
+      width = parseFloat(e.target.value);
+
+      document
+        .getElementById("widthValue")
+        .textContent = width;
+
+      redrawCone();
+    });
+
+  // Profondeur
+
+  document
+    .getElementById("depth")
+    .addEventListener("input", (e) => {
+
+      depth = parseFloat(e.target.value);
+
+      document
+        .getElementById("depthValue")
+        .textContent = depth;
+
+      redrawCone();
+    });
+
+  // Recherche bouton
+
+  document
+    .getElementById("searchBtn")
+    .addEventListener("click", searchAddress);
+
+  // Recherche entrée
+
+  document
+    .getElementById("addressInput")
+    .addEventListener("keydown", (e) => {
+
+      if (e.key === "Enter") {
+        searchAddress();
+      }
+    });
+
+  // Copier URL
+
+  document
+    .getElementById("copyBtn")
+    .addEventListener("click", async () => {
+
+      const url =
+        document
+          .getElementById("urlBox")
+          .textContent;
+
+      await navigator.clipboard.writeText(url);
+
+      alert("URL copiée");
+    });
+
+  // =========================
+  // INITIALISATION UI
+  // =========================
+
+  document.getElementById("angle").value = angle;
+  document.getElementById("width").value = width;
+  document.getElementById("depth").value = depth;
+
+  document.getElementById("angleValue").textContent = angle;
+  document.getElementById("widthValue").textContent = width;
+  document.getElementById("depthValue").textContent = depth;
+
+  redrawCone();
+
+</script>
+
+</body>
+</html>
