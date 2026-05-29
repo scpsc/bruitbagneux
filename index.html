@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -18,7 +19,6 @@ body {
   margin: 0;
   height: 100%;
   font-family: Arial, sans-serif;
-  overflow: hidden;
 }
 
 #map {
@@ -26,39 +26,16 @@ body {
   height: 100%;
 }
 
-/* Bouton mobile */
-
-#togglePanel {
-  display: none;
-
-  position: absolute;
-  top: 10px;
-  left: 10px;
-
-  z-index: 1100;
-
-  width: auto;
-
-  padding: 10px 14px;
-
-  border: none;
-  border-radius: 8px;
-
-  background: white;
-
-  box-shadow: 0 2px 10px rgba(0,0,0,0.25);
-
-  cursor: pointer;
-}
-
-/* Panneau */
+/* =========================
+   PANNEAU PARAMÈTRES
+   ========================= */
 
 .controls {
 
   position: absolute;
 
   top: 10px;
-  left: 10px;
+  right: 10px;
 
   z-index: 1000;
 
@@ -67,15 +44,50 @@ body {
 
   background: white;
 
+  border-radius: 12px;
+
+  box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+
+  overflow: hidden;
+}
+
+.controls-header {
+
+  display: flex;
+
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 12px;
+
+  background: #f5f5f5;
+
+  border-bottom: 1px solid #ddd;
+
+  font-weight: bold;
+}
+
+.controls-content {
   padding: 14px;
+}
 
-  border-radius: 10px;
+.controls.collapsed .controls-content {
+  display: none;
+}
 
-  box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+.toggle-btn {
 
-  max-height: calc(100vh - 20px);
+  width: auto;
 
-  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+
+  border: none;
+  background: none;
+
+  font-size: 24px;
+
+  cursor: pointer;
 }
 
 .controls label {
@@ -87,12 +99,10 @@ body {
 .controls input[type="text"] {
 
   width: 100%;
-
   box-sizing: border-box;
 
-  padding: 10px;
-
-  font-size: 16px;
+  padding: 8px;
+  margin-bottom: 8px;
 }
 
 .controls input[type="range"] {
@@ -102,12 +112,9 @@ body {
 button {
 
   width: 100%;
-
-  padding: 12px;
+  padding: 8px;
 
   margin-top: 8px;
-
-  font-size: 15px;
 
   cursor: pointer;
 }
@@ -127,44 +134,24 @@ button {
   word-break: break-word;
 }
 
-/* Tablettes */
-
-@media (max-width: 1024px) {
-
-  .controls {
-    width: 280px;
-  }
-
-}
-
-/* Smartphones */
-
 @media (max-width: 768px) {
 
-  #togglePanel {
-    display: block;
-  }
-
   .controls {
 
-    top: auto;
+    width: 260px;
 
-    left: 0;
-    right: 0;
-    bottom: 0;
-
-    width: auto;
-    max-width: none;
-
-    max-height: 50vh;
-
-    border-radius: 16px 16px 0 0;
-
-    transition: transform 0.3s ease;
+    top: 8px;
+    right: 8px;
   }
 
   .controls.collapsed {
-    transform: translateY(calc(100% - 55px));
+    width: auto;
+  }
+
+  .controls-content {
+
+    max-height: 70vh;
+    overflow-y: auto;
   }
 }
 
@@ -173,76 +160,86 @@ button {
 
 <body>
 
-<button id="togglePanel">
-⚙️ Paramètres
-</button>
+<div class="controls" id="controls">
 
-<div class="controls collapsed" id="controls">
+  <div class="controls-header">
 
-  <input
-    type="text"
-    id="addressInput"
-    placeholder="Entrer une adresse"
-  >
+    <span>⚙️ Paramètres</span>
 
-  <button id="searchBtn">
-    Rechercher une adresse
-  </button>
+    <button
+      id="togglePanel"
+      class="toggle-btn"
+      type="button">
+      −
+    </button>
 
-  <hr>
+  </div>
 
-  <strong>Paramètres du cône</strong>
-
-  <label>
-    Orientation :
-    <span id="angleValue">90</span>°
+  <div class="controls-content">
 
     <input
-      type="range"
-      id="angle"
-      min="0"
-      max="360"
-      step="1"
-      value="90"
+      type="text"
+      id="addressInput"
+      placeholder="Entrer une adresse"
     >
-  </label>
 
-  <label>
-    Largeur :
-    <span id="widthValue">40</span>°
+    <button id="searchBtn">
+      Rechercher une adresse
+    </button>
 
-    <input
-      type="range"
-      id="width"
-      min="5"
-      max="120"
-      step="1"
-      value="40"
-    >
-  </label>
+    <hr>
 
-  <label>
-    Profondeur :
-    <span id="depthValue">200</span> m
+    <strong>Paramètres du cône</strong>
 
-    <input
-      type="range"
-      id="depth"
-      min="10"
-      max="600"
-      step="10"
-      value="200"
-    >
-  </label>
+    <label>
+      Orientation :
+      <span id="angleValue">90</span>°
 
-  <button id="copyBtn">
-    Copier l'URL
-  </button>
+      <input
+        type="range"
+        id="angle"
+        min="0"
+        max="360"
+        step="1"
+        value="90"
+      >
+    </label>
 
-  <div
-    class="url-box"
-    id="urlBox"
-  ></div>
+    <label>
+      Largeur :
+      <span id="widthValue">40</span>°
+
+      <input
+        type="range"
+        id="width"
+        min="5"
+        max="120"
+        step="1"
+        value="40"
+      >
+    </label>
+
+    <label>
+      Profondeur :
+      <span id="depthValue">200</span> m
+
+      <input
+        type="range"
+        id="depth"
+        min="10"
+        max="600"
+        step="10"
+        value="200"
+      >
+    </label>
+
+    <button id="copyBtn">
+      Copier l'URL
+    </button>
+
+    <div class="url-box" id="urlBox"></div>
+
+  </div>
 
 </div>
 
@@ -252,45 +249,17 @@ button {
 
 <script>
 
-// =========================
-// CONFIGURATION PAR DÉFAUT
-// =========================
-
 const DEFAULT_LAT = 48.801900;
 const DEFAULT_LNG = 2.321874;
 const DEFAULT_ZOOM = 17;
 
-// =========================
-// PARAMÈTRES URL
-// =========================
+const params = new URLSearchParams(window.location.search);
 
-const params = new URLSearchParams(
-  window.location.search
-);
-
-let lat =
-  parseFloat(params.get("lat")) ||
-  DEFAULT_LAT;
-
-let lng =
-  parseFloat(params.get("lng")) ||
-  DEFAULT_LNG;
-
-let angle =
-  parseFloat(params.get("angle")) ||
-  90;
-
-let width =
-  parseFloat(params.get("width")) ||
-  40;
-
-let depth =
-  parseFloat(params.get("depth")) ||
-  200;
-
-// =========================
-// CARTE
-// =========================
+let lat = parseFloat(params.get("lat")) || DEFAULT_LAT;
+let lng = parseFloat(params.get("lng")) || DEFAULT_LNG;
+let angle = parseFloat(params.get("angle")) || 90;
+let width = parseFloat(params.get("width")) || 40;
+let depth = parseFloat(params.get("depth")) || 200;
 
 const map = L.map("map").setView(
   [lat, lng],
@@ -300,14 +269,9 @@ const map = L.map("map").setView(
 L.tileLayer(
   "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
   {
-    attribution:
-      "&copy; OpenStreetMap contributors"
+    attribution: "&copy; OpenStreetMap contributors"
   }
 ).addTo(map);
-
-// =========================
-// MARQUEUR
-// =========================
 
 const marker = L.marker(
   [lat, lng],
@@ -315,10 +279,6 @@ const marker = L.marker(
     draggable: true
   }
 ).addTo(map);
-
-// =========================
-// CALCUL GÉOGRAPHIQUE
-// =========================
 
 function destinationPoint(
   lat,
@@ -329,44 +289,33 @@ function destinationPoint(
 
   const R = 6378137;
 
-  const brng =
-    bearing * Math.PI / 180;
+  const brng = bearing * Math.PI / 180;
 
-  const lat1 =
-    lat * Math.PI / 180;
-
-  const lon1 =
-    lng * Math.PI / 180;
+  const lat1 = lat * Math.PI / 180;
+  const lon1 = lng * Math.PI / 180;
 
   const lat2 = Math.asin(
-    Math.sin(lat1) *
-      Math.cos(distance / R) +
+    Math.sin(lat1) * Math.cos(distance / R) +
     Math.cos(lat1) *
-      Math.sin(distance / R) *
-      Math.cos(brng)
+    Math.sin(distance / R) *
+    Math.cos(brng)
   );
 
-  const lon2 =
-    lon1 +
-    Math.atan2(
-      Math.sin(brng) *
-        Math.sin(distance / R) *
-        Math.cos(lat1),
+  const lon2 = lon1 + Math.atan2(
+    Math.sin(brng) *
+    Math.sin(distance / R) *
+    Math.cos(lat1),
 
-      Math.cos(distance / R) -
-        Math.sin(lat1) *
-        Math.sin(lat2)
-    );
+    Math.cos(distance / R) -
+    Math.sin(lat1) *
+    Math.sin(lat2)
+  );
 
   return [
     lat2 * 180 / Math.PI,
     lon2 * 180 / Math.PI
   ];
 }
-
-// =========================
-// CONE
-// =========================
 
 function buildConePolygon(
   lat,
@@ -380,19 +329,10 @@ function buildConePolygon(
 
   points.push([lat, lng]);
 
-  const start =
-    angle - width / 2;
+  const start = angle - width / 2;
+  const end = angle + width / 2;
 
-  const end =
-    angle + width / 2;
-
-  const step = 2;
-
-  for (
-    let a = start;
-    a <= end;
-    a += step
-  ) {
+  for (let a = start; a <= end; a += 2) {
 
     points.push(
       destinationPoint(
@@ -410,37 +350,6 @@ function buildConePolygon(
 }
 
 let coneLayer = null;
-
-// =========================
-// URL
-// =========================
-
-function updateURL() {
-
-  const url =
-    window.location.origin +
-    window.location.pathname +
-
-    `?lat=${lat.toFixed(6)}` +
-    `&lng=${lng.toFixed(6)}` +
-    `&angle=${angle}` +
-    `&width=${width}` +
-    `&depth=${depth}`;
-
-  history.replaceState(
-    {},
-    "",
-    url
-  );
-
-  document
-    .getElementById("urlBox")
-    .textContent = url;
-}
-
-// =========================
-// DESSIN
-// =========================
 
 function redrawCone() {
 
@@ -466,9 +375,21 @@ function redrawCone() {
   updateURL();
 }
 
-// =========================
-// RECHERCHE ADRESSE
-// =========================
+function updateURL() {
+
+  const url =
+    window.location.origin +
+    window.location.pathname +
+    `?lat=${lat.toFixed(6)}` +
+    `&lng=${lng.toFixed(6)}` +
+    `&angle=${angle}` +
+    `&width=${width}` +
+    `&depth=${depth}`;
+
+  history.replaceState({}, "", url);
+
+  document.getElementById("urlBox").textContent = url;
+}
 
 async function searchAddress() {
 
@@ -490,40 +411,25 @@ async function searchAddress() {
 
   try {
 
-    const response =
-      await fetch(url, {
-        headers: {
-          "Accept-Language": "fr"
-        }
-      });
+    const response = await fetch(url, {
+      headers: {
+        "Accept-Language": "fr"
+      }
+    });
 
-    const results =
-      await response.json();
+    const results = await response.json();
 
     if (!results.length) {
-
-      alert(
-        "Adresse introuvable"
-      );
-
+      alert("Adresse introuvable");
       return;
     }
 
-    lat =
-      parseFloat(results[0].lat);
+    lat = parseFloat(results[0].lat);
+    lng = parseFloat(results[0].lon);
 
-    lng =
-      parseFloat(results[0].lon);
+    marker.setLatLng([lat, lng]);
 
-    marker.setLatLng([
-      lat,
-      lng
-    ]);
-
-    map.setView(
-      [lat, lng],
-      17
-    );
+    map.setView([lat, lng], 17);
 
     redrawCone();
 
@@ -531,20 +437,13 @@ async function searchAddress() {
 
     console.error(err);
 
-    alert(
-      "Erreur de recherche"
-    );
+    alert("Erreur de recherche");
   }
 }
 
-// =========================
-// ÉVÉNEMENTS
-// =========================
+marker.on("drag", (e) => {
 
-marker.on("drag", e => {
-
-  const pos =
-    e.target.getLatLng();
+  const pos = e.target.getLatLng();
 
   lat = pos.lat;
   lng = pos.lng;
@@ -553,119 +452,86 @@ marker.on("drag", e => {
 });
 
 document
-.getElementById("angle")
-.addEventListener(
-  "input",
-  e => {
+  .getElementById("angle")
+  .addEventListener("input", (e) => {
 
-    angle =
-      Number(e.target.value);
+    angle = parseFloat(e.target.value);
 
-    document
-      .getElementById(
-        "angleValue"
-      )
-      .textContent =
-      angle;
+    document.getElementById(
+      "angleValue"
+    ).textContent = angle;
 
     redrawCone();
-  }
-);
+  });
 
 document
-.getElementById("width")
-.addEventListener(
-  "input",
-  e => {
+  .getElementById("width")
+  .addEventListener("input", (e) => {
 
-    width =
-      Number(e.target.value);
+    width = parseFloat(e.target.value);
 
-    document
-      .getElementById(
-        "widthValue"
-      )
-      .textContent =
-      width;
+    document.getElementById(
+      "widthValue"
+    ).textContent = width;
 
     redrawCone();
-  }
-);
+  });
 
 document
-.getElementById("depth")
-.addEventListener(
-  "input",
-  e => {
+  .getElementById("depth")
+  .addEventListener("input", (e) => {
 
-    depth =
-      Number(e.target.value);
+    depth = parseFloat(e.target.value);
 
-    document
-      .getElementById(
-        "depthValue"
-      )
-      .textContent =
-      depth;
+    document.getElementById(
+      "depthValue"
+    ).textContent = depth;
 
     redrawCone();
-  }
-);
+  });
 
 document
-.getElementById("searchBtn")
-.addEventListener(
-  "click",
-  searchAddress
-);
+  .getElementById("searchBtn")
+  .addEventListener("click", searchAddress);
 
 document
-.getElementById("addressInput")
-.addEventListener(
-  "keydown",
-  e => {
+  .getElementById("addressInput")
+  .addEventListener("keydown", (e) => {
 
     if (e.key === "Enter") {
       searchAddress();
     }
-  }
-);
+  });
 
 document
-.getElementById("copyBtn")
-.addEventListener(
-  "click",
-  async () => {
+  .getElementById("copyBtn")
+  .addEventListener("click", async () => {
 
-    await navigator
-      .clipboard
-      .writeText(
-        document
-          .getElementById(
-            "urlBox"
-          )
-          .textContent
-      );
+    const url =
+      document
+        .getElementById("urlBox")
+        .textContent;
+
+    await navigator.clipboard.writeText(url);
 
     alert("URL copiée");
-  }
-);
-
-// =========================
-// PANNEAU MOBILE
-// =========================
+  });
 
 const controls =
-  document.getElementById(
-    "controls"
-  );
+  document.getElementById("controls");
 
-const toggleBtn =
-  document.getElementById(
-    "togglePanel"
-  );
+const togglePanel =
+  document.getElementById("togglePanel");
 
-toggleBtn.addEventListener(
+function updatePanelIcon() {
+
+  togglePanel.textContent =
+    controls.classList.contains("collapsed")
+      ? "⚙️"
+      : "−";
+}
+
+togglePanel.addEventListener(
   "click",
   () => {
 
@@ -673,32 +539,36 @@ toggleBtn.addEventListener(
       "collapsed"
     );
 
-    setTimeout(() => {
-      map.invalidateSize();
-    }, 350);
+    updatePanelIcon();
   }
 );
 
-// =========================
-// INITIALISATION
-// =========================
+if (window.innerWidth <= 768) {
+  controls.classList.add("collapsed");
+}
+
+updatePanelIcon();
 
 document.getElementById("angle").value = angle;
 document.getElementById("width").value = width;
 document.getElementById("depth").value = depth;
 
-document.getElementById("angleValue").textContent = angle;
-document.getElementById("widthValue").textContent = width;
-document.getElementById("depthValue").textContent = depth;
+document.getElementById(
+  "angleValue"
+).textContent = angle;
+
+document.getElementById(
+  "widthValue"
+).textContent = width;
+
+document.getElementById(
+  "depthValue"
+).textContent = depth;
 
 redrawCone();
-
-window.addEventListener(
-  "resize",
-  () => map.invalidateSize()
-);
 
 </script>
 
 </body>
 </html>
+```
